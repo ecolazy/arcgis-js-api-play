@@ -1,47 +1,226 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-    <title>Web Map with FeatureServer Data Source</title>
+    <title>Web Map with Selectable Layers</title>
     <link rel="stylesheet" href="https://js.arcgis.com/4.21/esri/themes/light/main.css">
     <script src="https://js.arcgis.com/4.21/"></script>
     <style>
-      html,
-      body,
-      #viewDiv {
-        padding: 0;
-        margin: 0;
-        height: 100%;
-        width: 100%;
-      }
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #viewDiv {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 300px; /* Adjust this value based on your layout */
+        }
+
+        #layerSelectorContainer {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            width: 300px; /* Adjust this value based on your layout */
+            background: #fff; /* Optional: add a background color */
+            border-left: 1px solid #ccc; /* Optional: add a border between map and layers */
+            overflow: auto;
+            padding: 10px;
+        }
+
+        /* Optional: Style for layer selector dropdown */
+        #layerSelector {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
     </style>
-  </head>
-  <body>
+</head>
+
+<body>
     <div id="viewDiv"></div>
+    <div id="layerSelectorContainer">
+        <label for="layerSelector">Select Layer:</label>
+        <select id="layerSelector"></select>
+    </div>
+
     <script>
-      require([
-        "esri/Map",
-        "esri/views/MapView",
-        "esri/layers/FeatureLayer"
-      ], function(Map, MapView, FeatureLayer) {
-        var map = new Map({
-          basemap: "streets-navigation-vector"
-        });
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/FeatureLayer"
+        ], function (Map, MapView, FeatureLayer) {
+            var map = new Map({
+                basemap: "streets-navigation-vector"
+            });
 
-        var view = new MapView({
-          container: "viewDiv",
-          map: map,
-          center: [-2.21831115,51.73249817],
-          zoom: 15
-        });
+            var view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [-2.21831115, 51.73249817],
+                zoom: 15
+            });
 
-        var featureLayer = new FeatureLayer({
-          url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/HE_AIM_data/FeatureServer/0"
-        });
+            // Define a function to add a new layer based on the selected option
+            function addLayer(url) {
+                var newLayer = new FeatureLayer({
+                    url: url
+                });
+                map.add(newLayer);
+            }
 
-        map.add(featureLayer);
-      });
+            // Populate the layer selector with your API endpoints
+            var layerSelector = document.getElementById("layerSelector");
+            var layerEndpoints = [
+            { name: "2023_04_Scheduled_Wrecks", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/2023_04_Scheduled_Wrecks/FeatureServer" },
+            { name: "Accredited_Museums", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Accredited_Museums/FeatureServer" },
+            { name: "Aerofilms_Repton_Capability_Brown_AP_Details", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Aerofilms_Repton_Capability_Brown_AP_Details/FeatureServer" },
+            { name: "All_RRS_Reports_1_12_22_Point", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/All_RRS_Reports_1_12_22_Point/FeatureServer" },
+            { name: "All_RRS_Reports_12_2022", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/All_RRS_Reports_12_2022/FeatureServer" },
+            { name: "another_england_final", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/another_england_final/FeatureServer" },
+            { name: "another_england_final_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/another_england_final_view/FeatureServer" },
+            { name: "APEX_Obliques_External", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/APEX_Obliques_External/FeatureServer" },
+            { name: "APEX_Obliques_External_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/APEX_Obliques_External_view/FeatureServer" },
+            { name: "APEX_Verticals_External", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/APEX_Verticals_External/FeatureServer" },
+            { name: "APEX_Verticals_External_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/APEX_Verticals_External_view/FeatureServer" },
+            { name: "BBCPlacesv2", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/BBCPlacesv2/FeatureServer" },
+            { name: "Bucks_gis_row_2020", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Bucks_gis_row_2020/FeatureServer" },
+            { name: "Cannock Chase line features", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Cannock%20Chase%20line%20features/FeatureServer" },
+            { name: "Cannock Chase Monument Extents", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Cannock%20Chase%20Monument%20Extents/FeatureServer" },
+            { name: "Cannock Chase polygon features", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Cannock%20Chase%20polygon%20features/FeatureServer" },
+            { name: "Cannock_1km_lidar_HE_WGS84", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Cannock_1km_lidar_HE_WGS84/FeatureServer" },
+            { name: "Capability_Brown_300_Landscapes", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Capability_Brown_300_Landscapes/FeatureServer" },
+            { name: "CC_HLC", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/CC_HLC/FeatureServer" },
+            { name: "Centre_point___National_Heritage_List_for_England_(NHLE)___Protected_Wreck_sites", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Centre_point___National_Heritage_List_for_England_(NHLE)___Protected_Wreck_sites/FeatureServer" },
+            { name: "Centre_point_for_Protected_Wreck_sites", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Centre_point_for_Protected_Wreck_sites/FeatureServer" },
+            { name: "Changing_Chalk_Boundary", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Changing_Chalk_Boundary/FeatureServer" },
+            { name: "Changing_Chalk_project_area", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Changing_Chalk_project_area/FeatureServer" },
+            { name: "Conservation_Areas", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Conservation_Areas/FeatureServer" },
+            { name: "Conservation_Areas_GGHAZ", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Conservation_Areas_GGHAZ/FeatureServer" },
+            { name: "Counties_plus_WGS84", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Counties_plus_WGS84/FeatureServer" },
+            { name: "Cultural_Recovery_Fund", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Cultural_Recovery_Fund/FeatureServer" },
+            { name: "Downs_from_Above_Contribution_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Downs_from_Above_Contribution_view/FeatureServer" },
+            { name: "Downs_From_Above_Detailed_Mapping_(View)", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Downs_From_Above_Detailed_Mapping_(View)/FeatureServer" },
+            { name: "Downs_frpm_Above_Monument_Extents_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Downs_frpm_Above_Monument_Extents_view/FeatureServer" },
+            { name: "England_Hexabin_100km_count_06_09_22OSGB", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/England_Hexabin_100km_count_06_09_22OSGB/FeatureServer" },
+            { name: "England_Hexabin_100km_count_06_09_22OSGB_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/England_Hexabin_100km_count_06_09_22OSGB_view/FeatureServer" },
+            { name: "England_Hexabin_100km_count_07_02_23_OSGB", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/England_Hexabin_100km_count_07_02_23_OSGB/FeatureServer" },
+            { name: "England_Hexabin_25km_count_06_09_22OSGB_viewa", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/England_Hexabin_25km_count_06_09_22OSGB_viewa/FeatureServer" },
+            { name: "England_Hexabin_25km_count_07_02_23_OSGB", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/England_Hexabin_25km_count_07_02_23_OSGB/FeatureServer" },
+            { name: "Grimsby_HAZ", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Grimsby_HAZ/FeatureServer" },
+            { name: "HAR_2021_OTHR", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/HAR_2021_OTHR/FeatureServer" },
+            { name: "HAZ_500m_buffer_WGS84", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/HAZ_500m_buffer_WGS84/FeatureServer" },
+            { name: "HAZ_point_WGS84", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/HAZ_point_WGS84/FeatureServer" },
+            { name: "HAZr1", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/HAZr1/FeatureServer" },
+            { name: "HE_mills_100m", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/HE_mills_100m/FeatureServer" },
+            { name: "HE_Repton_Capability_Brown_AP_Details", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/HE_Repton_Capability_Brown_AP_Details/FeatureServer" },
+            { name: "HEregSchools", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/HEregSchools/FeatureServer" },
+            { name: "Highlights_21", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Highlights_21/FeatureServer" },
+            { name: "Historic England Regions", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Historic%20England%20Regions/FeatureServer" },
+            { name: "Historic_England_Heritage_at_Risk_Register_2022", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Historic_England_Heritage_at_Risk_Register_2022/FeatureServer" },
+            { name: "Historic_England_Heritage_at_Risk_Register_2022_Points", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Historic_England_Heritage_at_Risk_Register_2022_Points/FeatureServer" },
+            { name: "HOF_data", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/HOF_data/FeatureServer" },
+            { name: "JUB_points", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/JUB_points/FeatureServer" },
+            { name: "Large_Area_Projects_12_2022", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Large_Area_Projects_12_2022/FeatureServer" },
+            { name: "Local_Authority_Map_gdb", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Local_Authority_Map_gdb/FeatureServer" },
+            { name: "London_Archaeological_Priority_Areas", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/London_Archaeological_Priority_Areas/FeatureServer" },
+            { name: "Longton_HAZ_Story_Map_assets", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Longton_HAZ_Story_Map_assets/FeatureServer" },
+            { name: "LSOA_IMD2019__WGS84", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/LSOA_IMD2019__WGS84/FeatureServer" },
+            { name: "Mills", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Mills/FeatureServer" },
+            { name: "Mills_Aerofilms", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Mills_Aerofilms/FeatureServer" },
+            { name: "National_Heritage_List_for_England_NHLE", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/National_Heritage_List_for_England_NHLE/FeatureServer" },
+            { name: "National_Heritage_List_for_England_NHLE_v02_VIEW", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/National_Heritage_List_for_England_NHLE_v02_VIEW/FeatureServer" },
+            { name: "NHLE_Pubs_Inns_Bars", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/NHLE_Pubs_Inns_Bars/FeatureServer" },
+            { name: "NHLE2022govreg", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/NHLE2022govreg/FeatureServer" },
+            { name: "NPArcGISOnline_gdb", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/NPArcGISOnline_gdb/FeatureServer" },
+            { name: "Obliques_External_view_26_06_23", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Obliques_External_view_26_06_23/FeatureServer" },
+            { name: "Obliques_External_view_V2", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Obliques_External_view_V2/FeatureServer" },
+            { name: "Ongoing_Projects_Point_12_2022", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Ongoing_Projects_Point_12_2022/FeatureServer" },
+            { name: "Ongoing_Projects_Poly_12_2022", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Ongoing_Projects_Poly_12_2022/FeatureServer" },
+            { name: "RCZAS_Reports_WGS84_01_07_2020", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/RCZAS_Reports_WGS84_01_07_2020/FeatureServer" },
+            { name: "Repton_200_landscapes", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Repton_200_landscapes/FeatureServer" },
+            { name: "RRS_2022", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/RRS_2022/FeatureServer" },
+            { name: "service_33f7414bee56429594130b3a99da8d58", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/service_33f7414bee56429594130b3a99da8d58/FeatureServer" },
+            { name: "service_ecf5b6434eaa469fa9623a6f7729bd58", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/service_ecf5b6434eaa469fa9623a6f7729bd58/FeatureServer" },
+            { name: "service_f1741a38ddc845b2be91b1c02d4881f5", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/service_f1741a38ddc845b2be91b1c02d4881f5/FeatureServer" },
+            { name: "survey123_8889e963c0774d3e9331265dbd27354b_form", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/survey123_8889e963c0774d3e9331265dbd27354b_form/FeatureServer" },
+            { name: "survey123_a10dde49101a48138bdb5a581f82bf5e_form", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/survey123_a10dde49101a48138bdb5a581f82bf5e_form/FeatureServer" },
+            { name: "Swindon_HAZ", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Swindon_HAZ/FeatureServer" },
+            { name: "test_survey_data_2_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/test_survey_data_2_view/FeatureServer" },
+            { name: "test_survey_data_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/test_survey_data_view/FeatureServer" },
+            { name: "Unleashing_Case_Study_Locations", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Unleashing_Case_Study_Locations/FeatureServer" },
+            { name: "Updates_ArcGISOnline_gdb", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Updates_ArcGISOnline_gdb/FeatureServer" },
+            { name: "Upper_Tier_IMD_2019_WGS84", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Upper_Tier_IMD_2019_WGS84/FeatureServer" },
+            { name: "USAAF_verticals_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/USAAF_verticals_view/FeatureServer" },
+            { name: "V1_DfA_Monitoring", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/V1_DfA_Monitoring/FeatureServer" },
+            { name: "Verticals_2023_02_07_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Verticals_2023_02_07_view/FeatureServer" },
+            { name: "Verticals_20230526_update_V3", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Verticals_20230526_update_V3/FeatureServer" },
+            { name: "Verticals_20230526_update_V3_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Verticals_20230526_update_V3_view/FeatureServer" },
+            { name: "Verticals_external_26_06_23", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Verticals_external_26_06_23/FeatureServer" },
+            { name: "WFS_test_export", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/WFS_test_export/FeatureServer" },
+            { name: "Wingham_plus", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Wingham_plus/FeatureServer" },
+            { name: "survey123_b855de9618124a2ebe6ff2181facde37_form", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/survey123_b855de9618124a2ebe6ff2181facde37_form/FeatureServer" },
+            { name: "Greater_London___Archaeological_Priority_Areas", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Greater_London___Archaeological_Priority_Areas/FeatureServer" },
+            { name: "USAAF_oblique_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/USAAF_oblique_view/FeatureServer" },
+            { name: "service_14a2f196e3bc4458935909996c338c1d", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/service_14a2f196e3bc4458935909996c338c1d/FeatureServer" },
+            { name: "Downs_from_Above_Contributions_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Downs_from_Above_Contributions_view/FeatureServer" },
+            { name: "Obliques_20230526_update_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Obliques_20230526_update_view/FeatureServer" },
+            { name: "service_6d8b6376b0a64945ae8ba2c7cbb0dbdb", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/service_6d8b6376b0a64945ae8ba2c7cbb0dbdb/FeatureServer" },
+            { name: "Contribution_Downs_from_Above_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Contribution_Downs_from_Above_view/FeatureServer" },
+            { name: "USAAF_obliques", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/USAAF_obliques/FeatureServer" },
+            { name: "BSDE2", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/BSDE2/FeatureServer" },
+            { name: "AIM_project_FULL_V5a_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/AIM_project_FULL_V5a_view/FeatureServer" },
+            { name: "Projects_Split_by_HER_(Sept_2023)", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Projects_Split_by_HER_(Sept_2023)/FeatureServer" },
+            { name: "Detailed_Mapping_(Sept_2023)", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Detailed_Mapping_(Sept_2023)/FeatureServer" },
+            { name: "Monument_Extents_(Sept_2023)", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Monument_Extents_(Sept_2023)/FeatureServer" },
+            { name: "Aerofilms_Coalmines_500m", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Aerofilms_Coalmines_500m/FeatureServer" },
+            { name: "Aerofilms_Powerstations_500m", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Aerofilms_Powerstations_500m/FeatureServer" },
+            { name: "Coal", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Coal/FeatureServer" },
+            { name: "Scheduled_Wrecks_SEPT_23", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Scheduled_Wrecks_SEPT_23/FeatureServer" },
+            { name: "HE_AIM_data", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/HE_AIM_data/FeatureServer" },
+            { name: "All_AIM_31_08_2023_OSGB_V7_view", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/All_AIM_31_08_2023_OSGB_V7_view/FeatureServer" },
+            { name: "WorkersLA", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/WorkersLA/FeatureServer" },
+            { name: "Workers needed", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Workers%20needed/FeatureServer" },
+            { name: "Trades_GovtR", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Trades_GovtR/FeatureServer" },
+            { name: "Section17_Mgmt_Agreement_Grants", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Section17_Mgmt_Agreement_Grants/FeatureServer" },
+            { name: "Historic_England_Heritage_at_Risk_Register_2023_Points", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Historic_England_Heritage_at_Risk_Register_2023_Points/FeatureServer" },
+            { name: "Historic_England_Heritage_at_Risk_Register_2023", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Historic_England_Heritage_at_Risk_Register_2023/FeatureServer" },
+            { name: "Density", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Density/FeatureServer" },
+            { name: "Density_workers_needed", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Density_workers_needed/FeatureServer" },
+            { name: "Dr_Who_Tardis_Locations_ALL_UPLOAD_4", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Dr_Who_Tardis_Locations_ALL_UPLOAD_4/FeatureServer" },
+            { name: "Historic_England_Heritage_at_Risk_Register_2023___points", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Historic_England_Heritage_at_Risk_Register_2023___points/FeatureServer" },
+            { name: "Dr_Who_Map_FINAL_LOCATIONS_16", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Dr_Who_Map_FINAL_LOCATIONS_16/FeatureServer" },
+            { name: "Workers_needed", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Workers_needed/FeatureServer" },
+            { name: "Trades", url: "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/ArcGIS/rest/services/Trades/FeatureServer" },
+            ];
+
+            layerEndpoints.forEach(function (layer) {
+                var option = document.createElement("option");
+                option.value = layer.url;
+                option.text = layer.name;
+                layerSelector.add(option);
+            });
+
+            // Event listener for changing the selected layer
+            layerSelector.addEventListener("change", function () {
+                // Remove existing layers
+                map.layers.removeAll();
+                // Get the selected layer URL
+                var selectedLayerUrl = layerSelector.value;
+                // Add the selected layer
+                addLayer(selectedLayerUrl);
+            });
+        });
     </script>
-  </body>
+</body>
+
 </html>
