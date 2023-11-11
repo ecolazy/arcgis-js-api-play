@@ -41,8 +41,8 @@
             "esri/layers/FeatureLayer",
             "esri/Graphic",
             "esri/symbols/SimpleMarkerSymbol",
-            "esri/geometry/support/webMercatorUtils"
-        ], function(Map, SceneView, FeatureLayer, Graphic, SimpleMarkerSymbol, webMercatorUtils) {
+            "esri/geometry/Point"
+        ], function(Map, SceneView, FeatureLayer, Graphic, SimpleMarkerSymbol, Point) {
 
             var map = new Map({
                 basemap: "satellite",
@@ -82,8 +82,11 @@
             function centerMapOnUserLocation(userLocation) {
                 view.goTo({
                     center: [userLocation.longitude, userLocation.latitude],
-                    zoom: 12,
-                    tilt: 75
+                    zoom: 13,
+                    tilt: 75,
+                    easing: "linear",
+                    speedfactor: 0.5,
+                    duration: 2000
                 });
             }
 
@@ -125,38 +128,53 @@
             function populateSidebar(features) {
                 var sidebar = document.getElementById('sidebar');
                 features.forEach(feature => {
+                    var geometry;
+
+                    // Convert multipoint to point (use first point in multipoint)
+                    if (feature.geometry.type === "multipoint") {
+                        var firstPoint = feature.geometry.points[0];
+                        geometry = new Point({
+                            longitude: firstPoint[0],
+                            latitude: firstPoint[1]
+                        });
+                    } else {
+                        geometry = feature.geometry;
+                    }
+
                     var div = document.createElement('div');
                     div.className = 'sidebar-item';
                     div.innerHTML = feature.attributes.Name; // Adjust with correct attribute name
                     div.onclick = function() {
                         view.goTo({
-                            target: feature.geometry,
-                            zoom: 18,
+                            target: geometry,
+                            zoom: 19,
                             heading: 360,
-                            tilt: 60
+                            tilt: 60,
+                            easing: "linear",
                         }, {
-                            duration: 2000
+                            duration: 5000
                         });
                     };
                     sidebar.appendChild(div);
 
                     var pointGraphic = new Graphic({
-                        geometry: feature.geometry,
+                        geometry: geometry,
                         symbol: new SimpleMarkerSymbol({
-                            color: [226, 119, 40],
+                            color: "blue",
                             outline: {
                                 color: [255, 255, 255],
                                 width: 2
                             }
                         })
                     });
+
                     view.graphics.add(pointGraphic);
                 });
             }
 
             getUserLocation().then(userLocation => {
                 centerMapOnUserLocation(userLocation);
-                addUserLocationToMap(userLocation); // Add user's location marker
+                addUserLocationToMap(userLocation);
 
                 var point = {
                     type: "point",
