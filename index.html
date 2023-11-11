@@ -52,7 +52,6 @@
             var view = new SceneView({
                 container: "viewDiv",
                 map: map
-                // Camera will be set after getting the user's location
             });
 
             var pointLayer = new FeatureLayer({
@@ -60,6 +59,8 @@
             });
 
             map.add(pointLayer);
+
+            var lastSelectedGraphic = null;
 
             function getUserLocation() {
                 return new Promise((resolve, reject) => {
@@ -125,12 +126,33 @@
                 return pointLayer.queryFeatures(query);
             }
 
+            function highlightGraphic(graphic) {
+                if (lastSelectedGraphic) {
+                    lastSelectedGraphic.symbol = new SimpleMarkerSymbol({
+                        color: "blue",
+                        outline: {
+                            color: [255, 255, 255],
+                            width: 2
+                        }
+                    });
+                }
+
+                graphic.symbol = new SimpleMarkerSymbol({
+                    color: "yellow",
+                    outline: {
+                        color: [255, 255, 255],
+                        width: 2
+                    }
+                });
+
+                lastSelectedGraphic = graphic;
+            }
+
             function populateSidebar(features) {
                 var sidebar = document.getElementById('sidebar');
                 features.forEach(feature => {
                     var geometry;
 
-                    // Convert multipoint to point (use first point in multipoint)
                     if (feature.geometry.type === "multipoint") {
                         var firstPoint = feature.geometry.points[0];
                         geometry = new Point({
@@ -143,7 +165,7 @@
 
                     var div = document.createElement('div');
                     div.className = 'sidebar-item';
-                    div.innerHTML = feature.attributes.Name; // Adjust with correct attribute name
+                    div.innerHTML = feature.attributes.Name;
                     div.onclick = function() {
                         view.goTo({
                             target: geometry,
@@ -154,6 +176,7 @@
                         }, {
                             duration: 5000
                         });
+                        highlightGraphic(pointGraphic);
                     };
                     sidebar.appendChild(div);
 
