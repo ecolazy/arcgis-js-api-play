@@ -42,6 +42,8 @@
             width: 100%;
             padding: 5px;
             margin-bottom: 10px;
+            overflow-y: auto;
+            max-height: 300px; /* Adjust this value based on your preference */
         }
     </style>
 </head>
@@ -50,7 +52,7 @@
     <div id="viewDiv"></div>
     <div id="layerSelectorContainer">
         <label for="layerSelector">Select Layer:</label>
-        <select id="layerSelector"></select>
+        <select id="layerSelector" size="10"></select>
     </div>
 
     <script>
@@ -210,14 +212,12 @@
                 layerSelector.add(option);
             });
 
-            // Event listener for changing the selected layer
+            // Event listener for selecting a layer
             layerSelector.addEventListener("change", function () {
-                // Remove existing layers
-                map.layers.removeAll();
-                // Get the selected layer URL
-                var selectedLayerUrl = layerSelector.value;
-                // Add the selected layer
-                addLayer(selectedLayerUrl);
+                var selectedUrl = layerSelector.value;
+                if (selectedUrl) {
+                    addLayer(selectedUrl);
+                }
             });
         });
     </script>
